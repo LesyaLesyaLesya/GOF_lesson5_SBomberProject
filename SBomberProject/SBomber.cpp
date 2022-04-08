@@ -13,7 +13,8 @@
 using namespace std;
 using namespace MyTools;
 
-SBomber::SBomber(std::shared_ptr<MyTools::ILogger> logger)
+SBomber::SBomber(std::shared_ptr<MyTools::ILogger> logger, std::unique_ptr<LogVisitor> logVisitor)
+//SBomber::SBomber(std::shared_ptr<MyTools::ILogger> logger)
     : exitFlag(false),
     startTime(0),
     finishTime(0),
@@ -23,10 +24,14 @@ SBomber::SBomber(std::shared_ptr<MyTools::ILogger> logger)
     bombsNumber(10),
     score(0),
     logger_{std::move(logger)}
+    //,logVisitor_{std::move(logVisitor)}
 {
     if (!logger_) {
         throw std::runtime_error{"logger is nullptr"};
     }
+    /*if (!logVisitor_) {
+        throw std::runtime_error{ "logVisitor is nullptr" };
+    }*/
     logger_->WriteToLog(string(__FUNCTION__) + " was invoked");
 
     Plane* p = new Plane;
@@ -100,12 +105,13 @@ SBomber::~SBomber()
 void SBomber::MoveObjects()
 {
     logger_->WriteToLog(string(__FUNCTION__) + " was invoked");
-
+   
     for (size_t i = 0; i < vecDynamicObj.size(); i++)
     {
         if (vecDynamicObj[i] != nullptr)
         {
             vecDynamicObj[i]->Move(deltaTime);
+            vecDynamicObj[i]->Accept(*logVisitor_, logger_);
         }
     }
 };

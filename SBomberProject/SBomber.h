@@ -9,12 +9,14 @@
 #include "Ground.h"
 #include "Tank.h"
 #include "MyTools.h"
+#include "Visitor.h"
 
 class SBomber
 {
 public:
 
-    SBomber(std::shared_ptr<MyTools::ILogger> logger);
+    SBomber(std::shared_ptr<MyTools::ILogger> logger, std::unique_ptr<LogVisitor> logVisitor);
+    //SBomber(std::shared_ptr<MyTools::ILogger> logger);
     ~SBomber();
     
     inline bool GetExitFlag() const { return exitFlag; }
@@ -53,4 +55,5 @@ private:
     uint16_t bombsNumber, deltaTime, fps;
     int16_t score;
     std::shared_ptr<MyTools::ILogger> logger_;
+    std::unique_ptr<LogVisitor> logVisitor_;
 };

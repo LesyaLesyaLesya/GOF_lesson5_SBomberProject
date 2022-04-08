@@ -65,6 +65,7 @@ namespace MyTools {
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
         SetConsoleTextAttribute(hConsole, color); // color =  (WORD)((BackgroundColor << 4) | TextColor))
     }
+   
 
     //=============================================================================================
 

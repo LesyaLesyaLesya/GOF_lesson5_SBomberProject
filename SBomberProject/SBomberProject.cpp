@@ -13,9 +13,13 @@ using namespace std;
 int main(void)
 {
     auto logger = std::make_shared<MyTools::ProxyLogger>(MyTools::FileLoggerSingleton::getInstance());
+    auto logVisitor = std::make_unique<LogVisitor>();
+    //std::unique_ptr<LogVisitor> logVisitor(std::move(new LogVisitor));
+
     logger->OpenLogFile("log.txt");
 
-    SBomber game{logger};
+    SBomber game{logger, std::move(logVisitor)};
+    //SBomber game{ logger};
 
     do {
         game.TimeStart();
