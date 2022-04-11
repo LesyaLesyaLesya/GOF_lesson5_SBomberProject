@@ -12,7 +12,7 @@ class Plane;
 class Visitor
 {
 public:
-	Visitor();
+	Visitor() = default;
 	virtual ~Visitor()=default;
 
 	virtual void log(Bomb* e, std::shared_ptr<MyTools::ILogger> logger) = 0;
@@ -25,7 +25,7 @@ public:
 class LogVisitor : public Visitor // Доктор
 {
 public:
-	LogVisitor();
+	LogVisitor() = default;
 
 	void log(Bomb* e, std::shared_ptr<MyTools::ILogger> logger) override;
 	void log(Plane* e, std::shared_ptr<MyTools::ILogger> logger) override;

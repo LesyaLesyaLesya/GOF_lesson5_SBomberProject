@@ -42,3 +42,17 @@ void Tank::Draw() const
 	GotoXY(x,y);
 	cout << " ###########";
 }
+DestroyableGroundObject* Tank::HandleInsideCheck(const double x1, const double x2)
+{
+	if (this->isInside(x1, x2))
+	{
+		return this;
+		//score += vecDestoyableObjects[i]->GetScore();
+		//DeleteStaticObj(vecDestoyableObjects[i]);
+		//observers_[i]->HandleInsideCheck();
+	}
+	else
+	{
+		return nullptr;
+	}
+}
