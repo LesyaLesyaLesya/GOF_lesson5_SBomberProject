@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <utility>
 #include <stdexcept>
+#include <algorithm>
 
 #include "SBomber.h"
 #include "Bomb.h"
@@ -13,7 +14,8 @@
 using namespace std;
 using namespace MyTools;
 
-SBomber::SBomber(std::shared_ptr<MyTools::ILogger> logger)
+SBomber::SBomber(std::shared_ptr<MyTools::ILogger> logger, std::unique_ptr<LogVisitor> logVisitor)
+//SBomber::SBomber(std::shared_ptr<MyTools::ILogger> logger)
     : exitFlag(false),
     startTime(0),
     finishTime(0),
@@ -22,10 +24,14 @@ SBomber::SBomber(std::shared_ptr<MyTools::ILogger> logger)
     fps(0),
     bombsNumber(10),
     score(0),
-    logger_{std::move(logger)}
+    logger_{std::move(logger)},
+    logVisitor_{std::move(logVisitor)}
 {
     if (!logger_) {
         throw std::runtime_error{"logger is nullptr"};
+    }
+    if (!logVisitor_) {
+        throw std::runtime_error{ "logVisitor is nullptr" };
     }
     logger_->WriteToLog(string(__FUNCTION__) + " was invoked");
 
@@ -100,12 +106,13 @@ SBomber::~SBomber()
 void SBomber::MoveObjects()
 {
     logger_->WriteToLog(string(__FUNCTION__) + " was invoked");
-
+   
     for (size_t i = 0; i < vecDynamicObj.size(); i++)
     {
         if (vecDynamicObj[i] != nullptr)
         {
             vecDynamicObj[i]->Move(deltaTime);
+            vecDynamicObj[i]->Accept(*logVisitor_, logger_);
         }
     }
 };
@@ -136,14 +143,35 @@ void SBomber::CheckBombsAndGround()
         if (vecBombs[i]->GetY() >= y) // Пересечение бомбы с землей
         {
             pGround->AddCrater(vecBombs[i]->GetX());
-            CheckDestoyableObjects(vecBombs[i]);
+
+            std::vector<DestroyableGroundObject*> objectsForDelete = vecBombs[i]->CheckDestoyableObjects();
+
+            for (auto objectForDelete : objectsForDelete)
+                {
+                    if (objectForDelete)
+                    {
+                        if (typeid(objectForDelete) == typeid(Tank))
+                        {
+                            score += objectForDelete->GetScore();
+                        }
+                        else
+                        {
+                            //score += dynamic_cast<House*>(objectForDelete)->GetScore();
+                            score += objectForDelete->GetScore();
+                        }
+                        
+                        DeleteStaticObj(objectForDelete);
+                    }
+                }
+
+            //CheckDestoyableObjects(vecBombs[i]);
             DeleteDynamicObj(vecBombs[i]);
         }
     }
 
 }
 
-void SBomber::CheckDestoyableObjects(Bomb * pBomb)
+/*void SBomber::CheckDestoyableObjects(Bomb * pBomb)
 {
     vector<DestroyableGroundObject*> vecDestoyableObjects = FindDestoyableGroundObjects();
     const double size = pBomb->GetWidth();
@@ -158,7 +186,7 @@ void SBomber::CheckDestoyableObjects(Bomb * pBomb)
             DeleteStaticObj(vecDestoyableObjects[i]);
         }
     }
-}
+}*/
 
 void SBomber::DeleteDynamicObj(DynamicObject* pObj)
 {
@@ -361,6 +389,26 @@ void SBomber::DropBomb()
         double y = pPlane->GetY() + 2;
 
         Bomb* pBomb = new Bomb;
+
+        //добавляем набюлюдаталей в бомбу
+        std::for_each(vecStaticObj.begin(), vecStaticObj.end(), [&pBomb](GameObject* newObserver)
+            {
+                //dynamic_cast<DestroyableGroundObject*>(newObserver); 
+                if ((typeid(*newObserver) == typeid(House)) || (typeid(*newObserver) == typeid(Tank)))
+                {
+                    pBomb->AddObserver(std::shared_ptr<DestroyableGroundObject>(dynamic_cast<DestroyableGroundObject*>(newObserver)));
+                }              
+            });
+
+                /*(typeid(newObserver) == typeid(House)) ? dynamic_cast<House*>(*newObserver) : dynamic_cast<Tank*>(newObserver))
+                                );}
+        );
+        
+        /*for (auto newObserver : vecStaticObj)
+        {
+            pBomb->AddObserver(newObserver);
+        }*/
+
         pBomb->SetDirection(0.3, 1);
         pBomb->SetSpeed(2);
         pBomb->SetPos(x, y);

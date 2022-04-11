@@ -1,8 +1,8 @@
 #pragma once
-
-class GameObject {
+#include <stdlib.h>
+class GameObject
+{
 public:
-
     GameObject() : x(0.0), y(0.0), width(0) { }
 
     virtual void Draw() const = 0;
@@ -15,8 +15,8 @@ public:
     inline void SetWidth(uint16_t widthN) { width = widthN; }
     inline uint16_t GetWidth() const { return width; }
 
-protected:
-
-    double x, y;
-    uint16_t width;
+ protected:
+     double x, y;
+     uint16_t width;
 };
+

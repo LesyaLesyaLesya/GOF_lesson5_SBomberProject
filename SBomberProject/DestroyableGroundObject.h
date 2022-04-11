@@ -12,6 +12,7 @@ public:
 
     virtual inline uint16_t GetScore() const = 0;
 
+    virtual DestroyableGroundObject* HandleInsideCheck(const double x1, const double x2) = 0;
 protected:
 
 };
